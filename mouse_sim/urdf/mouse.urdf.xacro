@@ -1,0 +1,116 @@
+<?xml version="1.0" ?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="micro_mouse">
+
+    <!-- Reference Frame -->
+    <link name="base_footprint"/>
+
+    <!-- Chassis Frame -->
+    <link name="base_link">
+        <!-- Visual Representation in Sim -->
+        <visual>
+            <geometry>
+                <box size="0.1 0.06 0.04"/>
+            </geometry>
+            <material name="black">
+                <color rgba="0 0 0 0.8"/>
+            </material>
+        </visual>
+
+        <!-- Collision Boundaries -->
+        <collision>
+            <geometry>
+                <box size="0.10 0.06 0.04"/> <!-- Should be same as visual -->
+            </geometry>
+        </collision>
+
+        <!-- Mass and Inertial Behavior -->
+        <inertial>
+            <mass value="0.2"/>
+            <inertia ixx="0.0001" ixy="0.0" ixz="0.0" iyy="0.0001" iyz="0.0" izz="0.0001"/>
+        </inertial>
+    </link>
+
+    <!-- Connection Between Base-link and Base-footprint-->
+    <joint name="base_joint" type="fixed">
+        <parent link="base_footprint"/>
+        <child link="base_link"/>
+        <origin xyz="0 0 0.0225" rpy="0 0 0"/>
+    </joint>
+
+    <!-- Wheel Link Template -->
+    <xacro:macro name="wheel" params="position x_reflect y_reflect">
+        <!-- Link -->
+        <link name="${position}_wheel">
+            <visual>
+                <geometry>
+                    <cylinder radius="0.01" length="0.0125"/>
+                </geometry>
+                <material name="grey">
+                    <color rgba="0.663 0.533 0.6 0.8"/>
+                </material>
+            </visual>
+
+            <collision>
+                <geometry>
+                    <cylinder radius="0.01" length="0.0125"/>
+                </geometry>
+            </collision>
+
+            <inertial>
+                <mass value="0.02"/>
+                <inertia ixx="0.000001" ixy="0.0" ixz="0.0" iyy="0.000001" iyz="0.0" izz="0.000001"/>
+            </inertial>
+        </link>
+
+        <!-- Joint -->
+        <joint name="${position}_wheel_joint" type="continuous">
+            <parent link="base_link"/>
+            <child link="${position}_wheel"/>
+            <origin xyz="${x_reflect * 0.025} ${y_reflect * 0.03625} -0.0125" rpy="-1.5708 0 0"/>
+            <axis xyz="0 0 1"/>
+        </joint>
+    </xacro:macro>
+
+    <!-- Wheels (Links + Joints)-->
+    <xacro:wheel position="front_left"  x_reflect="1"  y_reflect="1" />
+    <xacro:wheel position="front_right" x_reflect="1"  y_reflect="-1" />
+    <xacro:wheel position="rear_left"   x_reflect="-1" y_reflect="1" />
+    <xacro:wheel position="rear_right"  x_reflect="-1" y_reflect="-1" />
+
+    <!-- Visual Laser Indicator -->
+    <link name="viewport">
+        <visual>
+            <geometry>
+                <cylinder radius="0.02" length="0.015"/>
+            </geometry>
+            <material name="grey">
+                <color rgba="0.663 0.533 0.6 0.8"/>
+            </material>
+        </visual>
+    </link>
+
+    <link name="laser">
+        <visual>
+            <geometry>
+                <cylinder radius="0.0005" length="0.03"/>
+            </geometry>
+            <material name="magenta">
+                <color rgba="0.197 0 0.47 0.8"/>
+            </material>
+        </visual>
+    </link>
+
+    <!-- Laser Location -->
+    <joint name="viewport_joint" type="fixed">
+        <parent link="base_link"/>
+        <child link="viewport"/>
+        <origin xyz="-0.03 0 0.02" rpy="0 0 0"/>
+    </joint>
+
+    <joint name="laser_joint" type="fixed">
+        <parent link="viewport"/>
+        <child link="laser"/>
+        <origin xyz="0.01 0 0.0075" rpy="0 1.5708 0"/>
+    </joint>
+
+</robot>

@@ -1,0 +1,45 @@
+<?xml version="1.0" ?>
+<sdf version="1.8" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+	<!-- Templatizing Wall Parameters -->
+	<xacro:property name="wall_length" 	 value="0.18"/>
+	<xacro:property name="wall_thick"  	 value="0.012"/>
+	<xacro:property name="wall_height" 	 value="0.05"/>
+	<xacro:property name="wall_z_offset" value="0.025"/>
+	<xacro:property name="outer_length"  value="1.44"/>
+
+	<!-- Wall Macro -->
+	<xacro:macro name="wall" params="name x y length:=${wall_length} yaw:=0">
+    	<link name="${name}_wall">
+			<pose>${x} ${y} ${wall_z_offset} 0 0 ${yaw}</pose>
+			<collision name="col">
+				<geometry><box><size>${length} ${wall_thick} ${wall_height}</size></box></geometry>
+			</collision>
+			<visual name="vis">
+				<geometry><box><size>${length} ${wall_thick} ${wall_height}</size></box></geometry>
+				<material><ambient>0.8 0.1 0.1 1</ambient><diffuse>0.8 0.1 0.1 1</diffuse></material>
+			</visual>
+		</link>
+	</xacro:macro>
+
+	<!-- World Definition -->
+	<world name="maze_world">
+		<include><uri>empty_world.sdf</uri></include>
+
+		<!-- Maze Layout -->
+		<model name="mouse_maze">
+			<static>true</static> <!-- Ensures the maze is an unmovable immutable object -->
+
+			<!-- PERIMETER WALLS -->
+			<xacro:wall name="south" x="0"     y="-0.72" length="${outer_length}" yaw="0"/>
+			<xacro:wall name="north" x="0"     y="0.72"  length="${outer_length}" yaw="0"/>
+			<xacro:wall name="west"  x="-0.72" y="0"     length="${outer_length}" yaw="1.5708"/>
+			<xacro:wall name="east"  x="0.72"  y="0"     length="${outer_length}" yaw="1.5708"/>
+
+			<!-- INTERNAL WALLS -->
+			<xacro:wall name="horizonatal_1" x="-0.36" y="-0.45"/> 
+			<xacro:wall name="vertical_1"    x="-0.54" y="-0.63" yaw="1.5708"/>
+
+		</model>
+	</world>
+</sdf>
