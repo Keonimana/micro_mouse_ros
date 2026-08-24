@@ -14,16 +14,21 @@ find_package(sensor_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(xacro REQUIRED)
 
-# 2. BUILD TARGETS AND XACRO PARSING (If you have C++ nodes later, they go here)
-# add_executable(maze_solver src/maze_solver.cpp)
-# ament_target_dependencies(maze_solver rclcpp)
-set(XACRO_WORLD_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/mouse_sim/worlds/maze_world.sdf.xacro")
-set(SDF_WORLD_OUTPUT  "${CMAKE_CURRENT_BINARY_DIR}/worlds/maze_world.sdf")
+# 2. BATCH PARSE ALL WORLD XACRO FILES
+file(GLOB MAZE_XACRO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/mouse_sim/worlds/*.sdf.xacro")
 
-xacro_add_xacro_file("${XACRO_WORLD_INPUT}" "${SDF_WORLD_OUTPUT}")
-add_custom_target(generate_maze_sdf ALL DEPENDS "${SDF_WORLD_OUTPUT}")
+set(ALL_GENERATED_SDFS "")
+foreach(XACRO_PATH ${MAZE_XACRO_FILES})
+  get_filename_component(FILE_NAME ${XACRO_PATH} NAME_WE)
+  
+  set(OUTPUT_SDF "${CMAKE_CURRENT_BINARY_DIR}/worlds/${FILE_NAME}.sdf")
+  xacro_add_xacro_file("${XACRO_PATH}" "${OUTPUT_SDF}")
+  list(APPEND ALL_GENERATED_SDFS "${OUTPUT_SDF}")
+endforeach()
 
-# 3. INSTALL MODELS, RULES, AND WORLDS (urdf & launch)
+add_custom_target(generate_all_sdfs ALL DEPENDS ${ALL_GENERATED_SDFS})
+
+# 3. INSTALLATION OF MODELS AND WORLDS
 install(
   DIRECTORY
     mouse_sim/urdf
@@ -33,10 +38,12 @@ install(
 
 install(
   FILES
-    mouse_sim/worlds/empty_world.sdf
-    "${SDF_WORLD_OUTPUT}"
+    ${ALL_GENERATED_SDFS}
   DESTINATION share/${PROJECT_NAME}/worlds
 )
+###################################################################
+# If non-xacro worlds are going to be included, install them here #
+###################################################################
 
 # 4. TESTING
 if(BUILD_TESTING)

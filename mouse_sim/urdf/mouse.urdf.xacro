@@ -113,4 +113,30 @@
         <origin xyz="0.01 0 0.0075" rpy="0 1.5708 0"/>
     </joint>
 
+
+    <!-- Gazebo Simulation Logic -->
+    <gazebo>
+        <plugin filename="ignition-gazebo-diff-drive-system" name="ignition::gazebo::systems::DiffDrive">
+            <!-- Wheel Joints -->
+            <left_joint>front_left_wheel_joint</left_joint>
+            <right_joint>front_right_wheel_joint</right_joint>
+            <left_joint>rear_left_wheel_joint</left_joint>
+            <right_joint>rear_right_wheel_joint</right_joint>
+
+            <!-- Kinematics -->
+            <wheel_separation>0.725</wheel_separation>
+            <wheel_radius>0.01</wheel_radius>
+
+            <!-- Limits -->
+            <max_linear_acceleration>1.0</max_linear_acceleration>
+
+            <!-- Topic & Frames -->
+            <topic>/cmd_vel</topic>
+            <odom_topic>/odom</odom_topic>
+            <tf_topic>/tf</tf_topic>
+            <frame_id>odom</frame_id>
+            <child_frame_id>base_footprint</child_frame_id>
+        </plugin>
+    </gazebo>
+
 </robot>
