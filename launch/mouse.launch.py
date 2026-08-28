@@ -18,9 +18,10 @@ def generate_launch_description():
         description='Name of the .sdf maze file inside the worlds/ directory'
     )
 
-    # Retrieve xacro robot model and world files
+    # Retrieve xacro robot model, config, and world files
     ros_pkg = get_package_share_directory('micro_mouse')
     model_path = os.path.join(ros_pkg, 'urdf', 'mouse.urdf.xacro')
+    config_path = os.path.join(ros_pkg, 'config', 'slam_params.yaml')
     worlds_dir = os.path.join(ros_pkg, 'worlds')
     gz_path = os.environ.get('IGN_GAZEBO_RESOURCE_PATH', '')
 
@@ -45,6 +46,18 @@ def generate_launch_description():
         executable='robot_state_publisher',
         output='screen',
         parameters=[robot_description] # Explicitly requires "robot_description"
+    )
+
+    # Utilize Gazebo Environmet for Mapping + Localization
+    slam_node = Node(
+        package='slam_toolbox',
+        executable='async_slam_toolbox_node',
+        name='slam_toolbox',
+        output='screen',
+        parameters=[
+            config_path,
+            {'use_sim_time': True}
+        ]
     )
 
     # Gazebo Sim Launch
@@ -83,8 +96,9 @@ def generate_launch_description():
         executable='parameter_bridge',
         arguments=[
             '/cmd_vel@geometry_msgs/msg/Twist@ignition.msgs.Twist',
-            '/odom@nav_msgs/msg/Odometry@ignition.msgs.Odometry',
-            '/tf@tf2_msgs/msg/TFMessage@ignition.msgs.PoseVMsg'
+            '/odom@nav_msgs/msg/Odometry[ignition.msgs.Odometry',
+            '/tf@tf2_msgs/msg/TFMessage[ignition.msgs.Pose_V',
+            '/scan@sensor_msgs/msg/LaserScan[ignition.msgs.LaserScan'
         ],
         output='screen'
     )
@@ -93,6 +107,7 @@ def generate_launch_description():
         maze_arg,
         gazebo_worlds,
         robot_state_publisher,
+        slam_node,
         gazebo,
         spawn_entity,
         ros_gz_bridge

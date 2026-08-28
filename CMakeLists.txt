@@ -31,8 +31,9 @@ add_custom_target(generate_all_sdfs ALL DEPENDS ${ALL_GENERATED_SDFS})
 # 3. INSTALLATION OF MODELS AND WORLDS
 install(
   DIRECTORY
+    config
+    launch
     mouse_sim/urdf
-    mouse_sim/launch
   DESTINATION share/${PROJECT_NAME}
 )
 

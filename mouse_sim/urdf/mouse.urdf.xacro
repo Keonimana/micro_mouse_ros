@@ -8,6 +8,7 @@
     <link name="base_link">
         <!-- Visual Representation in Sim -->
         <visual>
+            <origin xyz="0 0 0.0125" rpy="0 0 0"/>
             <geometry>
                 <box size="0.1 0.06 0.04"/>
             </geometry>
@@ -18,6 +19,7 @@
 
         <!-- Collision Boundaries -->
         <collision>
+            <origin xyz="0 0 0.0125" rpy="0 0 0"/>
             <geometry>
                 <box size="0.10 0.06 0.04"/> <!-- Should be same as visual -->
             </geometry>
@@ -34,7 +36,7 @@
     <joint name="base_joint" type="fixed">
         <parent link="base_footprint"/>
         <child link="base_link"/>
-        <origin xyz="0 0 0.0225" rpy="0 0 0"/>
+        <origin xyz="0 0 0.01" rpy="0 0 0"/>
     </joint>
 
     <!-- Wheel Link Template -->
@@ -66,7 +68,7 @@
         <joint name="${position}_wheel_joint" type="continuous">
             <parent link="base_link"/>
             <child link="${position}_wheel"/>
-            <origin xyz="${x_reflect * 0.025} ${y_reflect * 0.03625} -0.0125" rpy="-1.5708 0 0"/>
+            <origin xyz="${x_reflect * 0.025} ${y_reflect * 0.03625} 0" rpy="-1.5708 0 0"/>
             <axis xyz="0 0 1"/>
         </joint>
     </xacro:macro>
@@ -77,45 +79,9 @@
     <xacro:wheel position="rear_left"   x_reflect="-1" y_reflect="1" />
     <xacro:wheel position="rear_right"  x_reflect="-1" y_reflect="-1" />
 
-    <!-- Visual Laser Indicator -->
-    <link name="viewport">
-        <visual>
-            <geometry>
-                <cylinder radius="0.02" length="0.015"/>
-            </geometry>
-            <material name="grey">
-                <color rgba="0.663 0.533 0.6 0.8"/>
-            </material>
-        </visual>
-    </link>
-
-    <link name="laser">
-        <visual>
-            <geometry>
-                <cylinder radius="0.0005" length="0.03"/>
-            </geometry>
-            <material name="magenta">
-                <color rgba="0.197 0 0.47 0.8"/>
-            </material>
-        </visual>
-    </link>
-
-    <!-- Laser Location -->
-    <joint name="viewport_joint" type="fixed">
-        <parent link="base_link"/>
-        <child link="viewport"/>
-        <origin xyz="-0.03 0 0.02" rpy="0 0 0"/>
-    </joint>
-
-    <joint name="laser_joint" type="fixed">
-        <parent link="viewport"/>
-        <child link="laser"/>
-        <origin xyz="0.01 0 0.0075" rpy="0 1.5708 0"/>
-    </joint>
-
-
     <!-- Gazebo Simulation Logic -->
     <gazebo>
+        <!-- Enable Differential Drive -->
         <plugin filename="ignition-gazebo-diff-drive-system" name="ignition::gazebo::systems::DiffDrive">
             <!-- Wheel Joints -->
             <left_joint>front_left_wheel_joint</left_joint>
@@ -124,7 +90,7 @@
             <right_joint>rear_right_wheel_joint</right_joint>
 
             <!-- Kinematics -->
-            <wheel_separation>0.725</wheel_separation>
+            <wheel_separation>0.0725</wheel_separation>
             <wheel_radius>0.01</wheel_radius>
 
             <!-- Limits -->
@@ -138,5 +104,8 @@
             <child_frame_id>base_footprint</child_frame_id>
         </plugin>
     </gazebo>
+
+    <!-- File Inclusions -->
+    <xacro:include filename="lidar.xacro" /> <!-- Includes Lidar Capabilities -->
 
 </robot>
