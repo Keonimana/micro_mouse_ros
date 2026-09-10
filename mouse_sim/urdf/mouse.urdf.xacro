@@ -90,7 +90,7 @@
             <right_joint>rear_right_wheel_joint</right_joint>
 
             <!-- Kinematics -->
-            <wheel_separation>0.0725</wheel_separation>
+            <wheel_separation>0.08</wheel_separation> <!-- ~0.725 * 1.1 for realistic skid steering separation -->
             <wheel_radius>0.01</wheel_radius>
 
             <!-- Limits -->
@@ -99,13 +99,23 @@
             <!-- Topic & Frames -->
             <topic>/cmd_vel</topic>
             <odom_topic>/odom</odom_topic>
-            <tf_topic>/tf</tf_topic>
+            <publish_odom_tf>false</publish_odom_tf>
             <frame_id>odom</frame_id>
             <child_frame_id>base_footprint</child_frame_id>
+        </plugin>
+
+        <!-- Wheel Frame Transformations -->
+        <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher">
+            <topic>/wheel_joint_states</topic>
+            <joint_name>front_left_wheel_joint</joint_name>
+            <joint_name>front_right_wheel_joint</joint_name>
+            <joint_name>rear_left_wheel_joint</joint_name>
+            <joint_name>rear_right_wheel_joint</joint_name>
         </plugin>
     </gazebo>
 
     <!-- File Inclusions -->
     <xacro:include filename="lidar.xacro" /> <!-- Includes Lidar Capabilities -->
+    <xacro:include filename="imu.xacro" />   <!-- Includes IMU Capabilities -->
 
 </robot>

@@ -12,58 +12,55 @@ slam_toolbox:
     # ROS Parameters
     odom_frame: odom
     map_frame: map
-    base_frame: base_link
+    base_frame: base_footprint
     scan_topic: /scan
     use_map_saver: true
-    mode: mapping #localization
-
-    # if you'd like to immediately start continuing a map at a given pose
-    # or at the dock, but they are mutually exclusive, if pose is given
-    # will use pose
-    #map_file_name: test_steve
-    # map_start_pose: [0.0, 0.0, 0.0]
-    #map_start_at_dock: true
+    mode: mapping
 
     debug_logging: false
-    throttle_scans: 1
-    transform_publish_period: 0.02 #if 0 never publishes odometry
-    map_update_interval: 0.2
-    resolution: 0.01
-    min_laser_range: 0.0 #for rastering images
-    max_laser_range: 3.5 #for rastering images
-    minimum_time_interval: 0.2
+    throttle_scans: 2                   # Process every 2nd scan to save CPU
+    transform_publish_period: 0.02
+    map_update_interval: 2.0           # Re-render map every 2 seconds instead of 0.2s
+    resolution: 0.015                  # 1.5 cm high resolution
+    min_laser_range: 0.0
+    max_laser_range: 2.0               # Restrict max range to maze scale (was 3.5)
+    minimum_time_interval: 0.1
     transform_timeout: 0.2
-    tf_buffer_duration: 30.
-    stack_size_to_use: 40000000 #// program needs a larger stack size to serialize large maps
+    tf_buffer_duration: 30.0
+    stack_size_to_use: 40000000
     enable_interactive_mode: true
 
     # General Parameters
     use_scan_matching: true
     use_scan_barycenter: true
-    minimum_travel_distance: 0.02
-    minimum_travel_heading: 0.035
+    minimum_travel_distance: 0.02      # Process scan every 2 cm
+    minimum_travel_heading: 0.03       # Process scan every ~1.7 degrees
     scan_buffer_size: 10
-    scan_buffer_maximum_scan_distance: 10.0
-    link_match_minimum_response_fine: 0.1  
+    scan_buffer_maximum_scan_distance: 2.0
+    
+    # 1. MATCH THRESHOLDS (FIXED)
+    link_match_minimum_response_fine: 0.8  # Restored from 0.1! Must be strict.
     link_scan_maximum_distance: 1.5
-    loop_search_maximum_distance: 3.0
-    do_loop_closing: true 
-    loop_match_minimum_chain_size: 10           
-    loop_match_maximum_variance_coarse: 3.0  
-    loop_match_minimum_response_coarse: 0.35    
-    loop_match_minimum_response_fine: 0.45
 
-    # Correlation Parameters - Correlation Parameters
-    correlation_search_space_dimension: 0.5
+    # 2. LOOP CLOSURE (RESTRICTED FOR REPETITIVE MAZES)
+    do_loop_closing: true 
+    loop_search_maximum_distance: 0.6      # Only search nearby cells (~3 corridors)
+    loop_match_minimum_chain_size: 10           
+    loop_match_maximum_variance_coarse: 0.4  # Reduced from 3.0 to prevent bad snaps!
+    loop_match_minimum_response_coarse: 0.6    
+    loop_match_minimum_response_fine: 0.7
+
+    # Correlation Parameters - Fine Search Space
+    correlation_search_space_dimension: 0.2
     correlation_search_space_resolution: 0.01
-    correlation_search_space_smear_deviation: 0.1 
+    correlation_search_space_smear_deviation: 0.02
 
     # Correlation Parameters - Loop Closure Parameters
-    loop_search_space_dimension: 8.0
-    loop_search_space_resolution: 0.05
+    loop_search_space_dimension: 1.0       # Reduced from 8.0m to match maze scale
+    loop_search_space_resolution: 0.02
     loop_search_space_smear_deviation: 0.03
 
-    # Scan Matcher Parameters
+    # Scan Matcher Penalties (Trust Odometry)
     distance_variance_penalty: 0.5      
     angle_variance_penalty: 1.0    
 

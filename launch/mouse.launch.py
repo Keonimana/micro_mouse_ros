@@ -21,7 +21,8 @@ def generate_launch_description():
     # Retrieve xacro robot model, config, and world files
     ros_pkg = get_package_share_directory('micro_mouse')
     model_path = os.path.join(ros_pkg, 'urdf', 'mouse.urdf.xacro')
-    config_path = os.path.join(ros_pkg, 'config', 'slam_params.yaml')
+    slam_config_path = os.path.join(ros_pkg, 'config', 'slam_params.yaml')
+    ekf_config_path = os.path.join(ros_pkg, 'config', 'ekf.yaml')
     worlds_dir = os.path.join(ros_pkg, 'worlds')
     gz_path = os.environ.get('IGN_GAZEBO_RESOURCE_PATH', '')
 
@@ -45,7 +46,10 @@ def generate_launch_description():
         package='robot_state_publisher',
         executable='robot_state_publisher',
         output='screen',
-        parameters=[robot_description] # Explicitly requires "robot_description"
+        parameters=[
+            robot_description, # Explicitly requires "robot_description"
+            {'use_sim_time': True}
+        ]
     )
 
     # Utilize Gazebo Environmet for Mapping + Localization
@@ -55,7 +59,18 @@ def generate_launch_description():
         name='slam_toolbox',
         output='screen',
         parameters=[
-            config_path,
+            slam_config_path,
+            {'use_sim_time': True}
+        ]
+    )
+
+    localization_node = Node(
+        package='robot_localization',
+        executable='ekf_node',
+        name='ekf_filter_node',
+        output='screen',
+        parameters=[
+            ekf_config_path,
             {'use_sim_time': True}
         ]
     )
@@ -95,10 +110,12 @@ def generate_launch_description():
         package='ros_gz_bridge',
         executable='parameter_bridge',
         arguments=[
+            '/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock',
             '/cmd_vel@geometry_msgs/msg/Twist@ignition.msgs.Twist',
             '/odom@nav_msgs/msg/Odometry[ignition.msgs.Odometry',
-            '/tf@tf2_msgs/msg/TFMessage[ignition.msgs.Pose_V',
-            '/scan@sensor_msgs/msg/LaserScan[ignition.msgs.LaserScan'
+            '/scan@sensor_msgs/msg/LaserScan[ignition.msgs.LaserScan',
+            '/imu@sensor_msgs/msg/Imu[ignition.msgs.IMU',
+            '/joint_states@sensor_msgs/msg/JointState[ignition.msgs.Model'
         ],
         output='screen'
     )
@@ -108,6 +125,7 @@ def generate_launch_description():
         gazebo_worlds,
         robot_state_publisher,
         slam_node,
+        localization_node,
         gazebo,
         spawn_entity,
         ros_gz_bridge
